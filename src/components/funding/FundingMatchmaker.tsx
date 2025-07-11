@@ -352,32 +352,294 @@ const FundingMatchmaker = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="deadline">
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              Switch to this tab to view opportunities sorted by upcoming
-              deadlines.
-            </p>
-          </div>
+        <TabsContent value="deadline" className="space-y-4">
+          {filteredOpportunities
+            .sort(
+              (a, b) =>
+                getDaysRemaining(a.deadline) - getDaysRemaining(b.deadline),
+            )
+            .map((opportunity) => (
+              <Card key={opportunity.id} className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex gap-4 items-center">
+                      <div className="h-12 w-12 rounded-md overflow-hidden">
+                        <img
+                          src={opportunity.logoUrl}
+                          alt={opportunity.organization}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">
+                          {opportunity.title}
+                        </CardTitle>
+                        <CardDescription>
+                          {opportunity.organization}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <div className="text-right">
+                        <p className="font-medium">
+                          {formatDate(opportunity.deadline)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {getDaysRemaining(opportunity.deadline)} days left
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Amount
+                      </p>
+                      <p className="font-medium">{opportunity.amount}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Category
+                      </p>
+                      <Badge variant="outline" className="capitalize">
+                        {opportunity.category}
+                      </Badge>
+                    </div>
+                  </div>
+                  <p className="text-sm mb-4">{opportunity.description}</p>
+                </CardContent>
+                <CardFooter className="flex justify-between border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    {getDaysRemaining(opportunity.deadline) <= 7 && (
+                      <Badge variant="destructive">Urgent</Badge>
+                    )}
+                    {getDaysRemaining(opportunity.deadline) <= 14 &&
+                      getDaysRemaining(opportunity.deadline) > 7 && (
+                        <Badge variant="secondary">Soon</Badge>
+                      )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline">Save</Button>
+                    <Button>
+                      Apply Now
+                      <ArrowUpRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
         </TabsContent>
 
-        <TabsContent value="amount">
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              Switch to this tab to view opportunities sorted by funding amount.
-            </p>
-          </div>
+        <TabsContent value="amount" className="space-y-4">
+          {filteredOpportunities
+            .sort((a, b) => {
+              const getAmount = (amountStr: string) => {
+                const match = amountStr.match(/([\d,]+)/g);
+                if (match) {
+                  const maxAmount = Math.max(
+                    ...match.map((num) => parseInt(num.replace(/,/g, ""))),
+                  );
+                  return maxAmount;
+                }
+                return 0;
+              };
+              return getAmount(b.amount) - getAmount(a.amount);
+            })
+            .map((opportunity) => (
+              <Card key={opportunity.id} className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex gap-4 items-center">
+                      <div className="h-12 w-12 rounded-md overflow-hidden">
+                        <img
+                          src={opportunity.logoUrl}
+                          alt={opportunity.organization}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">
+                          {opportunity.title}
+                        </CardTitle>
+                        <CardDescription>
+                          {opportunity.organization}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-primary">
+                        {opportunity.amount}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Funding Amount
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Deadline
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <p className="font-medium">
+                          {formatDate(opportunity.deadline)}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Category
+                      </p>
+                      <Badge variant="outline" className="capitalize">
+                        {opportunity.category}
+                      </Badge>
+                    </div>
+                  </div>
+                  <p className="text-sm mb-4">{opportunity.description}</p>
+                </CardContent>
+                <CardFooter className="flex justify-between border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-full">
+                            <span className="text-sm font-medium">
+                              {opportunity.matchScore}%
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              match
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Match score based on your research profile</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline">Save</Button>
+                    <Button>
+                      Apply Now
+                      <ArrowUpRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
         </TabsContent>
 
-        <TabsContent value="saved">
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              Your saved funding opportunities will appear here.
-            </p>
-            <Button variant="outline" className="mt-4">
-              Browse Opportunities
-            </Button>
-          </div>
+        <TabsContent value="saved" className="space-y-4">
+          {/* Mock saved opportunities */}
+          {[fundingOpportunities[0], fundingOpportunities[2]].map(
+            (opportunity) => (
+              <Card
+                key={opportunity.id}
+                className="overflow-hidden border-primary/20"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex gap-4 items-center">
+                      <div className="h-12 w-12 rounded-md overflow-hidden">
+                        <img
+                          src={opportunity.logoUrl}
+                          alt={opportunity.organization}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">
+                          {opportunity.title}
+                        </CardTitle>
+                        <CardDescription>
+                          {opportunity.organization}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">Saved</Badge>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-full">
+                              <span className="text-sm font-medium">
+                                {opportunity.matchScore}%
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                match
+                              </span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Match score based on your research profile</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Amount
+                      </p>
+                      <p className="font-medium">{opportunity.amount}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Deadline
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <p className="font-medium">
+                          {formatDate(opportunity.deadline)}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        Category
+                      </p>
+                      <Badge variant="outline" className="capitalize">
+                        {opportunity.category}
+                      </Badge>
+                    </div>
+                  </div>
+                  <p className="text-sm mb-4">{opportunity.description}</p>
+                </CardContent>
+                <CardFooter className="flex justify-between border-t pt-4">
+                  <Button
+                    variant="outline"
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Remove from Saved
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline">View Details</Button>
+                    <Button>
+                      Apply Now
+                      <ArrowUpRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            ),
+          )}
+          {[fundingOpportunities[0], fundingOpportunities[2]].length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-4">
+                You haven't saved any funding opportunities yet.
+              </p>
+              <Button variant="outline">Browse Opportunities</Button>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 

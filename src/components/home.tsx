@@ -253,13 +253,15 @@ const Home = () => {
                       Connect with Mentors
                       <ChevronRight className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between"
-                    >
-                      Generate Graduation Declaration
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+                    <Link to="/graduation-declaration">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between"
+                      >
+                        Generate Graduation Declaration
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
 
